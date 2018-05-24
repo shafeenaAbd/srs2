@@ -20,4 +20,6 @@ from django.conf.urls import include,url
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('student.urls')),
+      url(r'^home/$',views.home_json,name='student_home_json'),
+    url(r'^list_json/$', views.student_list_json.as_view(), name="student_list_json"),
 ]
