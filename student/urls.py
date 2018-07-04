@@ -8,4 +8,5 @@ urlpatterns = [
     url(r'^sbadmin/$',views.home_sbadmin,name='student_home_sbadmin'),
     #url(r'^sbadmin/$',views.home_sbadmin,name='student_home_sbadmin'),
     url(r'^(?P<pk>\d+)/$', views.student_detail, name='student_detail'),
+    url(r'^(?P<pk>\d+)/remove$', views.student_remove, name='student_remove'),
 ]
