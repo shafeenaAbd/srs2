@@ -3,19 +3,39 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 # from django.utils import timezone
 from .models import Student
-# from .forms import MessageForm, SearchForm, StudentForm
+from .forms import StudentForm
+#MessageForm, SearchForm
 # from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required
 from django_datatables_view.base_datatable_view import BaseDatatableView
 from django.db.models import Count, Sum, Q, Case, Value, When, IntegerField
+
 # Create your views here.
 
 def home(request):
 	return render(request,'base.html')
 
-# Removing student
-def student_remove(request,pk):
+# edit student
+@login_required(login_url='/accounts/login/')
+def student_edit(request,pk):
+    student = get_object_or_404(Student, pk=pk)
+    if request.method == "POST":
+        form = StudentForm(request.POST,instance=student)
+        if form.is_valid():
+            student = form.save(commit=False)
+            student.createdby = request.user
+            student.save()
+            # return redirect('post_detail', pk=post.pk)
+            messages.success(request, "Student record with ID: " + str(student.pk) + " has been updated! ")
+            return redirect(reverse_lazy('student_detail',kwargs={'pk': student.pk }))
+    else:
+        form = StudentForm(instance=student)
+    
+    return render(request, 'student/student_edit.html', {'form': form})
 
+# Removing student
+@login_required(login_url='/accounts/login/')
+def student_remove(request,pk):
     student = get_object_or_404(Student, pk=pk)
     if request.method == "POST":
         if request.POST.get("submit_yes", ""):
@@ -27,14 +47,31 @@ def student_remove(request,pk):
     return render(request, 'student/student_confirm_delete.html', {'student': student, 'pk':pk})
   #Getting student detail
 def student_detail(request,pk):
+
     student = get_object_or_404(Student, pk=pk)
     return render(request, 'student/student_detail.html', {'student': student})
 
 def home_sbadmin(request):
     return render(request, 'student/index.html')
 
+@login_required(login_url='/accounts/login/')
+def student_new(request):
+    if request.method == "POST":
+        form = StudentForm(request.POST)
+        if form.is_valid():
+            student = form.save(commit=False)
+            student.createdby = request.user
+            student.save()
+            messages.success(request, "Student record with ID: " + str(student.pk) + " has been created ! ")
+            # return redirect(reverse_lazy('student_detail',kwargs={'pk': student.pk }))
+    else:
+        form = StudentForm()
+    print(request.user)
+    return render(request, 'student/student_new.html', {'form': form})
+
 def home_json(request):
     return render(request, 'student/home_json.html')
+
 # Create your views here.
 # Student JSON list filtering
 class student_list_json(BaseDatatableView):
